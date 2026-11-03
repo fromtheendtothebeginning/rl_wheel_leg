@@ -1,0 +1,8 @@
+# MuJoCo 仿真 + 建模流水线（scripts/ 与 rl_chassis/tools/）的依赖。
+# 版本与开发机上验证过的一致；Isaac Sim 那套依赖由 Isaac Sim 自己管，不在这里。
+mujoco==3.16.0
+numpy==2.2.6
+scipy==1.15.3
+pillow==12.3.0
+matplotlib==3.10.9
+coacd==1.0.14

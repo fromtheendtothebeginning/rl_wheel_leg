@@ -1,0 +1,17 @@
+<mujoco model="rl_chassis_v12_scene_free">
+  <include file="rl_chassis_v12_gas.xml" />
+  <option timestep="0.001" />
+  <visual>
+    <headlight diffuse="0.7 0.7 0.7" ambient="0.35 0.35 0.35" />
+    <global azimuth="140" elevation="-16" offwidth="1280" offheight="960" />
+    <map znear="0.02" />
+  </visual>
+  <asset>
+    <texture name="grid" type="2d" builtin="checker" width="256" height="256" rgb1="0.32 0.34 0.37" rgb2="0.26 0.28 0.31" />
+    <material name="grid" texture="grid" texrepeat="4 4" reflectance="0.05" />
+  </asset>
+  <worldbody>
+    <light pos="0 0 2.5" dir="0 0 -1" directional="true" castshadow="true" />
+    <geom name="floor" type="plane" size="4 4 0.1" material="grid" contype="0" conaffinity="1" condim="3" friction="1 0.005 0.0001" />
+  </worldbody>
+</mujoco>

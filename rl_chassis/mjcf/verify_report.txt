@@ -1,0 +1,84 @@
+rl_chassis_v12 = rl_chassis_v11_std + 4 个 POM 导轮
+
+URDF
+== rl_chassis_v12/urdf/rl_chassis_v12_std.urdf
+  links=19 joints=18，所有 joint axis = 0 0 1，唯一根 link = base_link
+  与 v11_std 的 14 个原有 joint origin 最大差 0
+  导出修复：
+    - Left/Right_rear_child1_joint 的零轴按 v11 补回
+    - 4 个 POM 导轮从 CAD 全局坐标移到轮轴中心（世界位姿误差 < 1.4e-8 m）
+    - v12 raw 的 base_link STL 只有 61172 面 / 0.000778 m³（不完整），
+      std 版改用 v11 完整底盘 96500 面 / 0.001201 m³；质量同为 5.6412 kg
+    - Right_rear_link 的惯量按“v12 = v11 + 导轮”恢复为 v11 值
+  snap_pin_axes --check：4 个真实销孔转 ±0.3 rad 最大撕开 0.0000 mm
+  pin_loops：4 条闭链（与 v11 完全一致）
+    Left_front_child2_link  <-> Left_rear_link
+    Left_front_child3_link  <-> Left_rear_child1_link
+    Right_front_child2_link <-> Right_rear_link
+    Right_front_joint3_link <-> Right_rear_child1_link
+
+凸分解
+== rl_chassis_v12/meshes/convex/collision.json
+  13 个非轮 link，285 个凸块；6 个轮 link 使用解析圆柱
+  （2 个主轮 + 4 个 pom_wheel*_Link）
+
+焊死基座
+== rl_chassis_v12/mjcf/rl_chassis_v12_weld_scene.xml
+  nq=18 nv=18 nbody=20 njnt=18 neq=4 ngeom=311 nu=6
+  总质量 7.8773 kg
+  闭链残差：0.004 / 0.002 / 0.003 / 0.004 µm
+  主轮碰撞圆柱最低点：0.000 mm
+  POM 导轮碰撞圆柱最低点：+71.995 mm（平地，法向力 0 N）
+  导轮转 1 rad：圆柱中心不动、轴线仍沿 ±y（关节轴通过轮心）
+  关节自由度 18，独立约束 8 -> 总自由度 10
+  Left / Right 各 3 个自由度（含主动轮）；4 个 POM 导轮为额外被动自由度
+  动态 2 s：闭链最大残差 0.0076 mm，NaN=False
+
+free 基座
+== rl_chassis_v12/mjcf/rl_chassis_v12_scene.xml
+  nq=25 nv=24 nbody=20 njnt=19 neq=4 ngeom=311 nu=6
+  总质量 7.8773 kg
+  home：主轮 +2.000 mm，POM 导轮 +73.995 mm
+  动态 2 s：闭链最大残差 0.1357 mm，NaN=False
+  （自由沉降后基座俯仰 -10.3°，低侧两个导轮随之接近地面；v11 同条件为 -11.5°）
+
+自碰撞
+== check_self_collision.py
+  装配位姿：自碰撞 0 对 / 地面接触 0 对
+  Left_front_joint 目标 -1.20 rad，被机构挡在 -0.357 rad
+
+保位与站姿
+== stance_sweep.py --hold-seconds 5 --n 11 --span 1.0
+  PD 保位 5 s：闭链残差 2.5 µm，髋关节漂移 0.168°
+  主轮法向力各 6.92 N；4 个 POM 导轮法向力均为 0 N
+  121 个站姿中 52 个主轮触地
+  可用站姿轮心 x ∈ [-0.1303, +0.0976] m
+  最大闭链残差 317.0 µm
+
+电机
+== 两版 MJCF
+  nu=6：Left/Right 的 front、rear、Wheel
+  pom_wheel1_joint ... pom_wheel4_joint 不加 motor，保留被动 hinge + damping
+
+策略回放
+== rl_chassis_v12/rl/mujoco/onnx_mj_v12.py --cmd-lin-vel 1.0 --cmd-height 0.15 --duration 8
+  默认策略：v11_flat_slow.onnx（最新一版 v11 平地策略）
+  v11 同条件：高度 0.1493 m，前进速度 1.089 m/s
+  v12 同条件：高度 0.1491 m，前进速度 1.090 m/s，倾斜 0.2°
+
+== 2.0 m/s（对应键盘按 1）
+  修正前默认 delay：实际延迟 20 ms + 15 ms 执行器滞后，倾斜 5~11°，明显前后晃
+  修正后默认 delay：精确 10 ms + 15 ms 执行器滞后
+  v12 8 s：高度 0.1470 m，前进速度 2.257 m/s，最大倾斜 1.3°
+  v11 8 s：高度 0.1473 m，前进速度 2.256 m/s，最大倾斜 1.3°
+
+== 站立 0 m/s，20 s
+  v12：高度 0.1491 m，末态速度 0.027 m/s，倾斜 1.1°
+
+== b / f 模式
+  b：全部执行器失能，所有 ctrl 实测最大绝对值 0.000000
+  f：锁定按下 f 时的四个髋角，轮电机用 1/2/3/4 差速控制
+  先按 b 躺平 4 s，再按 f：
+    +1.0 m/s，10 s：位移 +2.58 m，髋角最大漂移 3.0°
+    -1.0 m/s，6 s：位移 -4.28 m，髋角最大漂移 0.7°
+  1 Hz 日志会显示 mode=policy / pose / off

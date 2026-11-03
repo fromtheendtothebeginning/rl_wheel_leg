@@ -1,0 +1,8 @@
+.git
+.venv
+out
+__pycache__
+*.py[cod]
+.zcode
+MUJOCO_LOG.TXT
+*.mjb

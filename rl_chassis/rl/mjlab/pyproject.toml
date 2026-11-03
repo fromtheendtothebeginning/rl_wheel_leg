@@ -1,0 +1,20 @@
+[project]
+name = "mjlab-wheelleg"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Koy", email = "215474561@qq.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "mjlab>=1.6.0",
+    "onnxruntime>=1.31.0",
+]
+
+[project.scripts]
+mjlab-wheelleg = "mjlab_wheelleg:main"
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"

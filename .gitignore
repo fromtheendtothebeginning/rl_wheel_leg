@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 本地仿真虚拟环境（mujoco/numpy/scipy…，别提交）
+.venv/
+.venv*/
+
+# MuJoCo 会自动在当前目录写日志
+MUJOCO_LOG.TXT
+*.mjb
+
+# 脚本生成的产物（USD、渲染图）
+out/
+*.usda
+*.usdc
+
+# 别人的仓库 / 第三方代码：只在本地参考，不进版本库
+fudan_rl_wheel_leg/
+COD-2026RoboMaster-Balance-Simulation_File-main/
+
+# 训练产物：ckpt / tensorboard / 日志（体积大且可复现，模型只提交导出的 onnx）
+rl_chassis/rl/plane_v11/logs/
+*.pt
+*.tfevents.*
+*.log
+
+# 临时目录
+.codex_tmp_fk/
+
+# 杂项 csv 不提交，但 SolidWorks 导出的 URDF 参数表要留（已跟踪的不受影响）
+*.csv
+!*/urdf/*.csv
+
+# 编辑器 / 工具 / 系统
+.vscode/
+.idea/
+.zcode/
+.DS_Store
+
+# mjlab 训练产物（ckpt/tfevents 已被上面规则覆盖，这里补上每 run 的 params 快照）
+rl_chassis/rl/mjlab/logs/

@@ -1,0 +1,13 @@
+# ROS 1 Noetic 可视化环境（rviz / robot_state_publisher）。
+#
+# 为什么是 Noetic 而不是 ROS 2：rl_chassis 的 package.xml / CMakeLists 是 catkin（ROS 1），
+# 而且 Ubuntu 22.04 上装不了 Noetic —— 容器里反而是最省事的方式（镜像是 Ubuntu 20.04 底）。
+# 镜像约 4 GB。
+#
+#   docker build -f docker/Dockerfile.ros -t kaiwu-robomaster:ros .
+FROM osrf/ros:noetic-desktop-full
+
+# 容器里没有 X 会话权限时 rviz 会直接退出；compose 已经把 /tmp/.X11-unix 挂进来
+ENV LIBGL_ALWAYS_SOFTWARE=0
+
+WORKDIR /ws

@@ -1,0 +1,73 @@
+# 用法见 docker/README.md
+#
+#   docker-compose up mujoco        # 默认：MuJoCo 跑仿真 + 出一张 PNG（已验证）
+#   docker-compose run --rm tools   # 跑建模体检（已验证）
+#   docker-compose run --rm ros     # ROS 1 容器（需要 X11）
+#   docker-compose run --rm isaac   # Isaac Sim（需要 GPU + 官方镜像，很大）
+#
+# 装了 Compose v2 的话把 `docker-compose` 换成 `docker compose` 即可。
+
+services:
+  # MuJoCo 仿真（纯 CPU，镜像小，已验证）
+  mujoco:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.mujoco
+    image: kaiwu-robomaster:mujoco
+    working_dir: /workspace
+    # 用调用者身份跑，否则 out/ 里的产物会变成 root 所有
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+    environment:
+      - HOME=/tmp
+    volumes:
+      - ..:/workspace
+    # 渲染的 PNG 直接落在宿主机仓库的 out/ 里
+    command: ["scripts/run_mujoco.py", "--headless", "--png", "out/mujoco_docker.png"]
+
+  # 建模流水线（复用同一个镜像）
+  tools:
+    image: kaiwu-robomaster:mujoco
+    profiles: ["tools"]
+    working_dir: /workspace
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+    environment:
+      - HOME=/tmp
+    volumes:
+      - ..:/workspace
+    entrypoint: ["python"]
+    command:
+      - rl_chassis/tools/check_mjcf_loop.py
+      - --xml
+      - rl_chassis/mjcf/rl_chassis_v12_weld_scene.xml
+
+  # ROS 1 Noetic：容器里把仓库当 catkin 包挂进去，进去自己 catkin_make
+  ros:
+    image: kaiwu-robomaster:ros
+    profiles: ["ros"]
+    working_dir: /ws
+    volumes:
+      - ..:/ws/src/rl_chassis
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+    command: ["bash"]
+
+  # Isaac Sim：用 NVIDIA 官方镜像，不自建（25 GB 依赖 + GPU 驱动强绑定）
+  isaac:
+    image: nvcr.io/nvidia/isaac-sim:6.2.0
+    profiles: ["isaac"]
+    working_dir: /workspace
+    runtime: nvidia
+    network_mode: host
+    environment:
+      - ACCEPT_EULA=Y
+      - PRIVACY_CONSENT=Y
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - DISPLAY=${DISPLAY:-:0}
+    volumes:
+      - ..:/workspace
+      - ~/.cache/ov:/root/.cache/ov
+      - ~/.cache/pip:/root/.cache/pip
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    command: ["bash"]
