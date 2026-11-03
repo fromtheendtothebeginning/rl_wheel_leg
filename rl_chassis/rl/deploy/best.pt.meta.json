@@ -1,0 +1,81 @@
+{
+  "format": "torchscript",
+  "file": "best.pt",
+  "checkpoint": "logs/rsl_rl/wheelleg_v12_solid/2026-11-03_15-19-56_flat_solid_mass16_v10/model_2999.pt",
+  "iter": 2999,
+  "obs_dim": 125,
+  "obs_history": 5,
+  "obs_term_dims": [
+    3,
+    3,
+    3,
+    4,
+    6,
+    6
+  ],
+  "obs_terms": [
+    "ang_vel",
+    "gravity",
+    "commands",
+    "hip_knee_pos",
+    "joint_vel",
+    "applied_action"
+  ],
+  "obs_layout": "term-major, oldest frame first: [ang_vel(15)][gravity(15)][commands(15)][hip_knee(20)][joint_vel(30)][applied_action(30)]",
+  "obs_scales": {
+    "ang_vel": 0.25,
+    "commands": [
+      2.0,
+      0.25,
+      5.0
+    ],
+    "joint_vel": 0.05
+  },
+  "action_dim": 6,
+  "action_order": [
+    "left_hip",
+    "left_knee",
+    "left_wheel",
+    "right_hip",
+    "right_knee",
+    "right_wheel"
+  ],
+  "action_clip": 1.0,
+  "pos_action_scale": 0.5,
+  "vel_action_scale": 10.0,
+  "virtual_default": {
+    "left": [
+      -0.274884,
+      0.517721
+    ],
+    "right": [
+      0.274883,
+      -0.517722
+    ]
+  },
+  "control": {
+    "step_dt": 0.01,
+    "kp": 40.0,
+    "kd": 3.0,
+    "wheel_kd": 0.3,
+    "actuator_tau_s": 0.015,
+    "delay_steps": 1,
+    "effort_limits": [
+      40.0,
+      40.0,
+      20.0,
+      40.0,
+      40.0,
+      20.0
+    ],
+    "motor_order": [
+      "Left_front",
+      "Left_rear",
+      "Left_Wheel",
+      "Right_front",
+      "Right_rear",
+      "Right_Wheel"
+    ]
+  },
+  "note": "best.pt 输出原始动作，不裁剪；部署端需 clip 到 ±1 后再做任务映射。策略输出顺序是 [髋,膝,轮]×左右，真机电机力矩顺序是 [front, rear, wheel]×左右，经腿雅可比虚功映射。"
+}

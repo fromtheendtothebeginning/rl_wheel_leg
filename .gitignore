@@ -43,3 +43,6 @@ rl_chassis/rl/plane_v11/logs/
 
 # mjlab 训练产物（ckpt/tfevents 已被上面规则覆盖，这里补上每 run 的 params 快照）
 rl_chassis/rl/mjlab/logs/
+
+# 真机部署文件（例外：TorchScript 策略随仓库发布）
+!rl_chassis/rl/deploy/best.pt
